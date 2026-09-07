@@ -1,3 +1,23 @@
+#!/usr/bin/env bash
+
+#################################################################################################
+
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    CXX="${CXX:-g++-16}"
+    cmake_cxx="${CMAKE_CXX_COMPILER:-clang++}"
+    shared_library="libshared.dylib"
+else
+    CXX="${CXX:-g++}"
+    cmake_cxx="${CMAKE_CXX_COMPILER:-$CXX}"
+    shared_library="libshared.so"
+fi
+
+assembly_options=()
+
+if [[ "$(uname -m)" == "x86_64" ]]; then
+    assembly_options=(-masm=intel)
+fi
+
 #################################################################################################
 
 # sudo snap refresh && sudo snap install --classic code
@@ -168,7 +188,7 @@ cd projects/library_v1
 
 mkdir -p output && cd "$_"
 
-cmake .. && cmake --build .
+cmake -DCMAKE_CXX_COMPILER="$cmake_cxx" .. && cmake --build .
 
 cp libstatic.a ../../../libraries && cd ../../../
 
@@ -178,9 +198,9 @@ cd projects/library_v2
 
 mkdir -p output && cd "$_"
 
-cmake .. && cmake --build .
+cmake -DCMAKE_CXX_COMPILER="$cmake_cxx" .. && cmake --build .
 
-cp libshared.so ../../../libraries && cd ../../../
+cp "$shared_library" ../../../libraries && cd ../../../
 
 #################################################################################################
 
@@ -188,58 +208,58 @@ cd projects/examples
 
 mkdir -p output && cd "$_"
 
-cmake .. && cmake --build .
+cmake -DCMAKE_CXX_COMPILER="$cmake_cxx" .. && cmake --build .
 
 #################################################################################################
 
-cp ../../../libraries/libshared.so .
+cp "../../../libraries/$shared_library" .
 
 cp ../source/{font.ttf,image.jpg,script.py,source.cpp} .
 
 #################################################################################################
 
-g++ -S -std=c++23 -Wall -Wextra -Wpedantic -O0 -masm=intel ../source/02.12.cpp -o 02.12.asm
+"$CXX" -S -std=c++23 -Wall -Wextra -Wpedantic -O0 "${assembly_options[@]}" ../source/02.12.cpp -o 02.12.asm
 
 #################################################################################################
 
-g++ -E -std=c++23 -Wall -Wextra -Wpedantic -O0 -DNDEBUG    ../source/06.02.cpp -o 06.02.cpp
+"$CXX" -E -std=c++23 -Wall -Wextra -Wpedantic -O0 -DNDEBUG    ../source/06.02.cpp -o 06.02.cpp
 
 #################################################################################################
 
 files="../source/06.07.cpp ../source/06.08.cpp"
 
-g++ -c -std=c++23 -Wall -Wextra -Wpedantic -O0 ../source/06.06.hpp -o ../source/06.06.hpp.gch
+"$CXX" -c -std=c++23 -Wall -Wextra -Wpedantic -O0 ../source/06.06.hpp -o ../source/06.06.hpp.gch
 
-g++    -std=c++23 -Wall -Wextra -Wpedantic -O0 -flto=auto $files -o 06.08
+"$CXX" -std=c++23 -Wall -Wextra -Wpedantic -O0 -flto=auto $files -o 06.08
 
 rm ../source/06.06.hpp.gch
 
 #################################################################################################
 
-g++ -c -std=c++23 -Wall -Wextra -Wpedantic -O0 ../source/06.08.cpp
+"$CXX" -c -std=c++23 -Wall -Wextra -Wpedantic -O0 ../source/06.08.cpp
 
 #################################################################################################
 
 files="../source/06.16.cpp 06.13.o 06.14.o 06.15.o"
 
-g++ -c -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts -xc++-system-header print
+"$CXX" -c -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts -xc++-system-header print
 
-g++ -c -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts ../source/06.15.cxx
+"$CXX" -c -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts ../source/06.15.cxx
 
-g++ -c -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts ../source/06.13.cxx
+"$CXX" -c -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts ../source/06.13.cxx
 
-g++ -c -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts ../source/06.14.cxx
+"$CXX" -c -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts ../source/06.14.cxx
 
-g++    -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts $files -o 06.16
+"$CXX" -std=c++23 -Wall -Wextra -Wpedantic -O0 -fmodules-ts $files -o 06.16
 
 #################################################################################################
 
-g++    -std=c++23 -Wall -Wextra -Wpedantic -O3                    ../source/07.18.cpp -o 07.18.01
+"$CXX" -std=c++23 -Wall -Wextra -Wpedantic -O3                    ../source/07.18.cpp -o 07.18.01
 
-g++    -std=c++23 -Wall -Wextra -Wpedantic -O3 -fprofile-generate ../source/07.18.cpp -o 07.18.02
+"$CXX" -std=c++23 -Wall -Wextra -Wpedantic -O3 -fprofile-generate ../source/07.18.cpp -o 07.18.02
 
 ./07.18.02
 
-g++    -std=c++23 -Wall -Wextra -Wpedantic -O3 -fprofile-use      ../source/07.18.cpp -o 07.18.02
+"$CXX" -std=c++23 -Wall -Wextra -Wpedantic -O3 -fprofile-use      ../source/07.18.cpp -o 07.18.02
 
 #################################################################################################

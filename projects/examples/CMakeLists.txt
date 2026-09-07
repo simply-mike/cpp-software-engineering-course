@@ -27,7 +27,7 @@ find_package(Boost 1.90 REQUIRED COMPONENTS
     locale
     log
     program_options
-    python312
+    python314
     timer
     unit_test_framework
 )
@@ -465,11 +465,15 @@ endforeach()
 
 ################################################################################################
 
-add_executable             (02.41 source/02.41.cpp)
+if(NOT APPLE)
 
-target_compile_options     (02.41 PRIVATE -Wall -Wextra -Wpedantic -O0 -m32)
+    add_executable             (02.41 source/02.41.cpp)
 
-target_link_options        (02.41 PRIVATE -m32)
+    target_compile_options     (02.41 PRIVATE -Wall -Wextra -Wpedantic -O0 -m32)
+
+    target_link_options        (02.41 PRIVATE -m32)
+
+endif()
 
 ################################################################################################
 
@@ -491,11 +495,15 @@ target_link_libraries      (06.17 PRIVATE ${Boost_LIBRARIES})
 
 ################################################################################################
 
-add_executable             (07.13 source/07.13.cpp)
+if(NOT APPLE)
 
-target_compile_options     (07.13 PRIVATE -Wall -Wextra -Wpedantic -O0 -g)
+    add_executable             (07.13 source/07.13.cpp)
 
-target_link_libraries      (07.13 PRIVATE stdc++exp)
+    target_compile_options     (07.13 PRIVATE -Wall -Wextra -Wpedantic -O0 -g)
+
+    target_link_libraries      (07.13 PRIVATE stdc++exp)
+
+endif()
 
 ################################################################################################
 
@@ -587,13 +595,17 @@ target_link_libraries      (13.23 PRIVATE libpqxx::pqxx)
 
 ################################################################################################
 
-add_executable             (14.37 source/14.37.cpp)
+if(NOT APPLE)
 
-target_compile_options     (14.37 PRIVATE -Wall -Wextra -Wpedantic -O0)
+    add_executable             (14.37 source/14.37.cpp)
 
-target_link_libraries      (14.37 PRIVATE TBB::tbb)
+    target_compile_options     (14.37 PRIVATE -Wall -Wextra -Wpedantic -O0)
 
-target_link_libraries      (14.37 PRIVATE /usr/lib/gcc/x86_64-linux-gnu/13/libatomic.a)
+    target_link_libraries      (14.37 PRIVATE TBB::tbb)
+
+    target_link_libraries      (14.37 PRIVATE atomic)
+
+endif()
 
 ################################################################################################
 
@@ -688,6 +700,10 @@ target_link_libraries      (14.38 PRIVATE benchmark::benchmark)
 
 target_link_libraries      (14.38 PRIVATE TBB::tbb)
 
-target_link_libraries      (14.38 PRIVATE /usr/lib/gcc/x86_64-linux-gnu/13/libatomic.a)
+if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+
+    target_link_libraries  (14.38 PRIVATE atomic)
+
+endif()
 
 ################################################################################################
